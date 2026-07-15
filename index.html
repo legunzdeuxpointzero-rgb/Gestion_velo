@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Véloçi · Cahier de garde</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root{
+  --asphalt:#12181F;
+  --asphalt-2:#1B2430;
+  --asphalt-3:#242F3D;
+  --paper:#F5F2EA;
+  --card:#FFFFFF;
+  --ink:#1B2430;
+  --ink-soft:#5B6472;
+  --line:#E3DECD;
+  --green:#2F7A52;
+  --green-soft:#E3F0E7;
+  --amber:#C8811E;
+  --amber-soft:#FBEEDA;
+  --red:#C1443B;
+  --red-soft:#FBE7E4;
+  --shadow: 0 1px 2px rgba(18,24,31,.06), 0 8px 24px rgba(18,24,31,.06);
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:'Inter',system-ui,sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.disp{font-family:'Space Grotesk',sans-serif;}
+
+/* ---------- layout ---------- */
+.app{display:flex; min-height:100vh;}
+.sidebar{
+  width:246px; flex-shrink:0; background:var(--asphalt); color:#EDEAE0;
+  display:flex; flex-direction:column; position:sticky; top:0; height:100vh;
+}
+.brand{
+  padding:22px 20px 16px; border-bottom:1px solid rgba(255,255,255,.08);
+}
+.brand-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; letter-spacing:.2px; color:#fff; display:flex; align-items:center; gap:9px;}
+.brand-tag{font-size:11.5px; color:#9AA5B1; margin-top:5px; letter-spacing:.3px;}
+.route-dot{width:9px;height:9px;border-radius:50%;background:var(--green); box-shadow:0 0 0 3px rgba(47,122,82,.28); flex-shrink:0;}
+
+.nav{flex:1; overflow-y:auto; padding:14px 10px;}
+.nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:#6B7684; padding:14px 10px 6px;}
+.nav-item{
+  display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:9px;
+  color:#C7CDD6; text-decoration:none; font-size:13.5px; font-weight:500; cursor:pointer;
+  border-left:3px solid transparent; margin-bottom:2px; transition:background .12s, color .12s;
+}
+.nav-item:hover{background:rgba(255,255,255,.06); color:#fff;}
+.nav-item.active{background:var(--asphalt-3); color:#fff; border-left:3px solid var(--green);}
+.nav-badge{
+  font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:600; width:25px; height:18px;
+  display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(255,255,255,.18);
+  border-radius:5px; color:#AEB7C2; flex-shrink:0; letter-spacing:.3px;
+}
+.nav-item.active .nav-badge{border-color:var(--green); color:#fff; background:rgba(47,122,82,.3);}
+.banner{
+  background:var(--green-soft); border:1px solid var(--green); color:#245c3f; padding:12px 16px;
+  border-radius:10px; display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;
+  font-size:13px; gap:12px;
+}
+.banner button{flex-shrink:0;}
+.sidebar-foot{padding:14px 20px; font-size:11px; color:#6B7684; border-top:1px solid rgba(255,255,255,.08);}
+
+.main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.topbar{
+  position:sticky; top:0; z-index:5; background:rgba(245,242,234,.92); backdrop-filter:blur(6px);
+  padding:22px 32px 14px; border-bottom:1px solid var(--line);
+}
+.topbar-row{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+.topbar h1{font-family:'Space Grotesk',sans-serif; font-size:24px; margin:0 0 4px; font-weight:700;}
+.topbar p{margin:0; color:var(--ink-soft); font-size:13.5px; max-width:640px;}
+.route-line{height:2px; margin-top:14px; background-image:repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px); position:relative;}
+.route-line::before{content:""; position:absolute; left:0; top:-3px; width:8px; height:8px; border-radius:50%; background:var(--green);}
+
+.content{padding:24px 32px 60px; flex:1;}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; gap:7px; border:none; cursor:pointer;
+  font-family:'Inter',sans-serif; font-weight:600; font-size:13px; border-radius:8px;
+  padding:9px 16px; transition:transform .08s, box-shadow .12s;
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--asphalt); color:#fff;}
+.btn-primary:hover{background:var(--asphalt-2);}
+.btn-outline{background:transparent; color:var(--ink); border:1px solid var(--line);}
+.btn-outline:hover{border-color:var(--ink-soft);}
+.btn-danger{background:var(--red-soft); color:var(--red);}
+.btn-ghost{background:transparent; color:var(--ink-soft); padding:6px 8px;}
+.btn-sm{padding:6px 10px; font-size:12px; border-radius:7px;}
+
+/* ---------- cards / kpis ---------- */
+.kpi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:22px;}
+.kpi-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow);}
+.kpi-label{font-size:11.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.5px; font-weight:600;}
+.kpi-value{font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; margin-top:6px;}
+.kpi-sub{font-size:11.5px; color:var(--ink-soft); margin-top:3px;}
+.kpi-value.good{color:var(--green);} .kpi-value.warn{color:var(--amber);} .kpi-value.bad{color:var(--red);}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); padding:20px 22px; margin-bottom:20px;}
+.card h3{font-family:'Space Grotesk',sans-serif; margin:0 0 4px; font-size:15.5px;}
+.card .hint{color:var(--ink-soft); font-size:12.5px; margin:0 0 14px;}
+
+.fleet-bar{display:flex; height:26px; border-radius:7px; overflow:hidden; border:1px solid var(--line);}
+.fleet-bar div{display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; font-weight:600; min-width:0; overflow:hidden; white-space:nowrap;}
+.fleet-legend{display:flex; gap:16px; margin-top:10px; flex-wrap:wrap;}
+.fleet-legend span{font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:6px;}
+.swatch{width:10px;height:10px;border-radius:3px; display:inline-block;}
+
+/* ---------- plate / code chip (signature element) ---------- */
+.plate{
+  font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600; letter-spacing:.5px;
+  display:inline-block; padding:3px 8px; border-radius:5px; background:var(--asphalt); color:#EDEAE0;
+  border:1px solid #303B49; box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.plate.velo{background:var(--green); color:#fff; border-color:#255f41;}
+
+/* ---------- table ---------- */
+.table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--card); box-shadow:var(--shadow);}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+thead th{
+  text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-soft);
+  padding:11px 14px; border-bottom:1px solid var(--line); white-space:nowrap; font-weight:600; background:#FAF8F2;
+}
+tbody td{padding:11px 14px; border-bottom:1px solid #EFEBDF; white-space:nowrap; vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#FBFAF5;}
+.empty-row td{color:var(--ink-soft); font-style:italic; text-align:center; padding:26px;}
+.num{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums;}
+.actions-cell{display:flex; gap:6px;}
+
+.chip{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:20px;}
+.chip-green{background:var(--green-soft); color:var(--green);}
+.chip-amber{background:var(--amber-soft); color:var(--amber);}
+.chip-red{background:var(--red-soft); color:var(--red);}
+.chip-grey{background:#EDEAE0; color:var(--ink-soft);}
+.dot{width:7px;height:7px;border-radius:50%; display:inline-block;}
+.dot-green{background:var(--green);} .dot-amber{background:var(--amber);} .dot-red{background:var(--red);}
+.map-preview{width:220px; height:130px; border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#F8F5F0;}
+.map-preview iframe{width:100%; height:100%; border:0;}
+
+/* ---------- forms / modal ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(18,24,31,.5); display:flex; align-items:flex-start; justify-content:center;
+  padding:5vh 16px; overflow-y:auto; z-index:50;
+}
+.hidden{display:none !important;}
+.modal{background:var(--card); border-radius:14px; width:100%; max-width:640px; box-shadow:0 24px 60px rgba(0,0,0,.25); overflow:hidden;}
+.modal-head{padding:18px 24px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+.modal-head h3{margin:0; font-family:'Space Grotesk',sans-serif; font-size:16.5px;}
+.modal-body{padding:20px 24px; max-height:64vh; overflow-y:auto;}
+.modal-foot{padding:16px 24px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px;}
+.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.form-grid .full{grid-column:1/-1;}
+.field label{display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:5px;}
+.field input, .field select, .field textarea{
+  width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13.5px;
+  font-family:'Inter',sans-serif; background:#FDFCFA; color:var(--ink);
+}
+.field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--green); outline-offset:1px; border-color:var(--green);}
+.field textarea{resize:vertical; min-height:56px;}
+.close-x{background:none; border:none; font-size:18px; cursor:pointer; color:var(--ink-soft); line-height:1;}
+
+/* legend page */
+.legend-row{display:flex; gap:14px; align-items:flex-start; padding:10px 0; border-bottom:1px dashed var(--line);}
+.legend-row:last-child{border-bottom:none;}
+.legend-row .k{min-width:170px; font-weight:600; font-size:13px;}
+.legend-row .v{color:var(--ink-soft); font-size:13px;}
+
+.section-title-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:12px; flex-wrap:wrap;}
+.toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+.toolbar input[type=text], .toolbar input[type=month], .toolbar input[type=date]{
+  border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px; font-family:'Inter',sans-serif; background:#fff;
+}
+
+.toast{
+  position:fixed; bottom:22px; right:22px; background:var(--asphalt); color:#fff; padding:11px 18px;
+  border-radius:9px; font-size:13px; box-shadow:var(--shadow); z-index:80; opacity:0; transform:translateY(8px);
+  transition:opacity .18s, transform .18s; pointer-events:none;
+}
+.toast.show{opacity:1; transform:translateY(0);}
+
+@media (max-width: 880px){
+  .app{flex-direction:column;}
+  .sidebar{position:fixed; left:-246px; z-index:40; transition:left .2s; width:100%; max-width:280px; height:100%;}
+  .sidebar.open{left:0;}
+  .topbar, .content{padding-left:18px; padding-right:18px;}
+  .topbar{padding-top:18px;}
+  .form-grid{grid-template-columns:1fr;}
+  .kpi-grid{grid-template-columns:1fr;}
+  .fleet-legend{justify-content:flex-start;}
+  .actions-cell{flex-wrap:wrap; gap:8px;}
+  .toolbar{justify-content:flex-start;}
+  .toolbar input[type=text], .toolbar input[type=month], .toolbar input[type=date]{width:100%;}
+  .map-preview{width:100%; height:180px;}
+  .menu-btn{display:inline-flex !important;}
+  table{min-width:0;}
+  thead th, tbody td{white-space:normal;}
+}
+@media (max-width: 640px){
+  .topbar-row{align-items:flex-start;}
+  .topbar h1{font-size:20px;}
+  .brand{padding:18px 16px 14px;}
+  .nav{padding:12px 10px;}
+  .sidebar-foot{padding:12px 16px;}
+  .card, .kpi-card, .table-wrap, .modal{margin-left:0; margin-right:0;}
+  .table-wrap{border:none; box-shadow:none;}
+  .btn, .btn-sm{width:100%; justify-content:center;}
+  .btn + .btn{margin-top:8px;}
+  .modal{width:calc(100% - 32px); max-width:100%;}
+  .overlay{padding:4vh 10px;}
+}
+.menu-btn{display:none; background:none; border:1px solid var(--line); border-radius:8px; padding:7px 10px; cursor:pointer; margin-right:10px;}
+
+:focus-visible{outline:2px solid var(--green); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-name"><span class="route-dot"></span>Véloçi</div>
+      <div class="brand-tag">Cahier de garde — flotte de vélos</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">Données enregistrées automatiquement dans votre compte.</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-row">
+        <div>
+          <button class="menu-btn" id="menuBtn">☰</button>
+          <h1 id="pageTitle" style="display:inline;">Tableau de bord</h1>
+          <p id="pageSubtitle">Vue d'ensemble de l'activité du mois.</p>
+        </div>
+        <div class="toolbar" id="pageToolbar"></div>
+      </div>
+      <div class="route-line"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Ajouter</h3>
+      <button class="close-x" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" id="modalCancel">Annuler</button>
+      <button class="btn btn-primary" id="modalSave">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   VÉLOÇI — CAHIER DE GARDE — application locale (1 fichier)
+   ========================================================= */
+
+/* ---------- constantes & état ---------- */
+const COLLECTIONS = ['livreurs','velos','journal','depenses','maintenance','accidents','evaluations','absences'];
+const LABELS = {
+  livreurs:'un livreur', velos:'un vélo', journal:'une fiche journalière', depenses:'une dépense',
+  maintenance:'une intervention', accidents:'un accident', evaluations:'une évaluation', absences:'une absence'
+};
+var db = {}; COLLECTIONS.forEach(k=>db[k]=[]);
+var currentPage = 'dashboard';
+var dashboardMonth = null;
+var presenceDate = null;
+var isDemoSeed = false;
+var bannerDismissed = false;
+var modalState = {entity:null, id:null, prefill:null};
+var lastJournalLivreurId = null;
+var lastJournalVeloId = null;
+
+/* ---------- helpers génériques ---------- */
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function currentMonthStr(){ return new Date().toISOString().slice(0,7); }
+function uid(){ return 'id_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function escapeHtml(str){
+  return String(str===undefined||str===null?'':str).replace(/[&<>"']/g, ch => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]
+  ));
+}
+function fmt(n){ const v=Number(n)||0; return new Intl.NumberFormat('fr-FR').format(v)+' FCFA'; }
+function fmtDateDisp(iso){
+  if(!iso) return '—';
+  const parts = String(iso).split('-');
+  if(parts.length!==3) return escapeHtml(iso);
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+function nextCode(list, field, prefix){
+  let max=0;
+  list.forEach(x=>{
+    const v = x[field]||'';
+    const m = v.match(new RegExp(prefix+'-(\\d+)'));
+    if(m) max = Math.max(max, parseInt(m[1],10));
+  });
+  return prefix+'-'+String(max+1).padStart(3,'0');
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+function livreurById(id){ return db.livreurs.find(l=>l.id===id); }
+function veloById(id){ return db.velos.find(v=>v.id===id); }
+function livreurName(id){ const l=livreurById(id); return l? l.nom : ''; }
+function livreurMatricule(id){ const l=livreurById(id); return l? l.matricule : ''; }
+function veloCode(id){ const v=veloById(id); return v? v.code : ''; }
+function plate(text, type){
+  if(!text) return '<span class="chip chip-grey">—</span>';
+  return `<span class="plate${type==='velo'?' velo':''}">${escapeHtml(text)}</span>`;
+}
+function livreurCell(id){
+  const l = livreurById(id);
+  if(!l) return '<span class="chip chip-grey">—</span>';
+  return `${plate(l.matricule)} <span style="color:var(--ink-soft); font-size:12px;">${escapeHtml(l.nom)}</span>`;
+}
+function mapPreview(label){
+  if(label===undefined || label===null || String(label).trim()==='') return '<span class="chip chip-grey">—</span>';
+  const query = encodeURIComponent(String(label));
+  const src = `https://www.google.com/maps?q=${query}&output=embed`;
+  const href = `https://www.google.com/maps/search/?api=1&query=${query}`;
+  return `<a href="${href}" target="_blank" rel="noreferrer" style="display:block; text-decoration:none; color:inherit;">
+      <div class="map-preview"><iframe src="${src}" loading="lazy" referrerpolicy="no-referrer" title="Localisation"></iframe></div>
+      <div style="font-size:12px; color:var(--ink-soft); margin-top:4px; text-align:center;">${escapeHtml(label)}</div>
+    </a>`;
+}
+function veloCell(id){
+  const v = veloById(id);
+  if(!v) return '<span class="chip chip-grey">—</span>';
+  return `${plate(v.code,'velo')}${v.modele? ` <span style="color:var(--ink-soft); font-size:12px;">${escapeHtml(v.modele)}</span>`:''}`;
+}
+function chipHtml(status){
+  return `<span class="chip ${status.cls}">${status.dot? `<span class="dot ${status.dot}"></span>`:''}${escapeHtml(status.label)}</span>`;
+}
+function resteOf(row){ return (Number(row.montantPrevu)||0) - (Number(row.montantPaye)||0); }
+function statutOf(row){
+  const reste = resteOf(row);
+  if(reste<=0) return {cls:'chip-green', dot:'dot-green', label:'À jour'};
+  if((Number(row.montantPaye)||0) > 0) return {cls:'chip-amber', dot:'dot-amber', label:'Partiel'};
+  return {cls:'chip-red', dot:'dot-red', label:'Retard / dette'};
+}
+function etatVeloChip(etat){
+  const map = {'Disponible':'chip-green','En location':'chip-grey','En réparation':'chip-amber','Hors service':'chip-red'};
+  return `<span class="chip ${map[etat]||'chip-grey'}">${escapeHtml(etat||'—')}</span>`;
+}
+function maintenanceCostFor(veloId){
+  return db.maintenance.filter(m=>m.veloId===veloId).reduce((s,m)=>s+(Number(m.cout)||0),0);
+}
+function latestJournalFor(livreurId){
+  return db.journal.filter(j=>j.livreurId===livreurId).sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+}
+function sortByDateDesc(list){ return [...list].sort((a,b)=>(b.date||'').localeCompare(a.date||'')); }
+
+/* ---------- persistance ---------- */
+async function loadAll(){
+  for(const key of COLLECTIONS){
+    try{
+      const res = await window.storage.get('veloci:'+key, false);
+      db[key] = res && res.value ? JSON.parse(res.value) : [];
+    }catch(e){ db[key] = []; }
+  }
+}
+async function saveCollection(key){
+  try{
+    const res = await window.storage.set('veloci:'+key, JSON.stringify(db[key]), false);
+    if(!res) toast('La sauvegarde a échoué — vérifiez votre connexion.');
+  }catch(e){ toast('La sauvegarde a échoué — vérifiez votre connexion.'); }
+}
+async function maybeSeed(){
+  const allEmpty = COLLECTIONS.every(k=>db[k].length===0);
+  if(!allEmpty) return;
+  const livreurId=uid(), veloId=uid();
+  db.livreurs.push({id:livreurId, matricule:'LIV-001', nom:'Amadou Koné', tel:'07 07 12 34 56', cni:'',
+    quartier:'Yopougon', latitude:'Rue des jardins', entreprise:'Yango', urgence:'01 02 03 04 05', dateEntree:todayStr(),
+    veloId, etatRemise:'Bon', detteAnterieure:0, actif:'Oui'});
+  db.velos.push({id:veloId, code:'VEL-001', modele:"VTT urbain 26''", dateAcq:'2025-11-10',
+    etat:'En location', obs:'Révision complète effectuée.'});
+  db.journal.push({id:uid(), date:todayStr(), livreurId, veloId, heureSortie:'06:30', heureRetour:'19:00',
+    montantPrevu:2000, montantPaye:2000, heurePrevuePaiement:'20:00', heureReellePaiement:'20:00',
+    joursRetard:0, penalite:0, observation:'Aucun problème', raison:'', decision:'—',
+    sigLivreur:'Oui', sigGestionnaire:'Oui'});
+  db.depenses.push({id:uid(), date:todayStr(), nature:'Réparation', montant:8000, motif:'Changement pneu VEL-001'});
+  db.maintenance.push({id:uid(), veloId, date:todayStr(), panne:'Pneu crevé', reparation:'Changement de pneu avant',
+    cout:8000, mecanicien:'Ibrahim'});
+  db.evaluations.push({id:uid(), livreurId, mois:currentMonthStr(), ponctualite:4.5, entretien:4,
+    commentaire:'Très bon entretien du vélo, ponctuel.'});
+  isDemoSeed = true;
+  for(const k of COLLECTIONS) await saveCollection(k);
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'veloci-donnees-'+todayStr()+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('Export téléchargé.');
+}
+function importDataFromFile(file){
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      COLLECTIONS.forEach(k=>{ db[k] = Array.isArray(parsed[k]) ? parsed[k] : []; });
+      for(const k of COLLECTIONS) await saveCollection(k);
+      toast('Données importées.');
+      go(currentPage);
+    }catch(e){ toast("Fichier invalide — impossible d'importer."); }
+  };
+  reader.readAsText(file);
+}
+async function resetAll(){
+  if(!confirm('Ceci supprime définitivement toutes les données (livreurs, vélos, journal, dépenses…). Continuer ?')) return;
+  COLLECTIONS.forEach(k=>db[k]=[]);
+  for(const k of COLLECTIONS) await saveCollection(k);
+  isDemoSeed = false; bannerDismissed = true;
+  toast('Toutes les données ont été supprimées.');
+  go('dashboard');
+}
+
+/* ---------- schémas de formulaire ---------- */
+const SCHEMAS = {
+  livreurs:{ fields:[
+    {key:'nom', label:'Nom et prénom', type:'text', required:true},
+    {key:'tel', label:'Téléphone', type:'text'},
+    {key:'cni', label:'N° CNI (facultatif)', type:'text'},
+    {key:'quartier', label:'Quartier de résidence', type:'text'},
+    {key:'latitude', label:'Nom de rue ou quartier', type:'text', placeholder:'Rue, quartier ou repère'},
+    {key:'entreprise', label:'Entreprise de livraison', type:'text', placeholder:'Glovo, Yango, Jumia…'},
+    {key:'urgence', label:"Contact d'urgence", type:'text'},
+    {key:'dateEntree', label:"Date d'entrée", type:'date', default:todayStr()},
+    {key:'veloId', label:'Vélo attribué', type:'select-velo'},
+    {key:'etatRemise', label:'État du vélo à la remise', type:'select', options:['Neuf','Bon','Moyen'], default:'Bon'},
+    {key:'detteAnterieure', label:'Dette antérieure (FCFA)', type:'number', default:0},
+    {key:'actif', label:'Actif', type:'select', options:['Oui','Non'], default:'Oui'},
+  ]},
+  velos:{ fields:[
+    {key:'code', label:'Code vélo (vide = généré automatiquement)', type:'text', placeholder:'VEL-001'},
+    {key:'modele', label:'Marque / modèle', type:'text'},
+    {key:'dateAcq', label:"Date d'acquisition", type:'date'},
+    {key:'etat', label:'État actuel', type:'select', options:['Disponible','En location','En réparation','Hors service'], default:'Disponible'},
+    {key:'obs', label:'Observations / kilométrage', type:'textarea', full:true},
+  ]},
+  journal:{ fields:[
+    {key:'date', label:'Date', type:'date', default:todayStr(), required:true},
+    {key:'livreurId', label:'Livreur', type:'select-livreur', required:true},
+    {key:'veloId', label:'Vélo', type:'select-velo'},
+    {key:'heureSortie', label:'Heure de sortie', type:'time'},
+    {key:'heureRetour', label:'Heure de retour', type:'time'},
+    {key:'montantPrevu', label:'Montant prévu (FCFA)', type:'number', default:0},
+    {key:'montantPaye', label:'Montant payé (FCFA)', type:'number', default:0},
+    {key:'heurePrevuePaiement', label:'Heure prévue de paiement', type:'time'},
+    {key:'heureReellePaiement', label:'Heure réelle de paiement', type:'time'},
+    {key:'joursRetard', label:'Nombre de jours de retard', type:'number', default:0},
+    {key:'penalite', label:'Pénalité (FCFA)', type:'number', default:0},
+    {key:'observation', label:'Observation / incident', type:'select',
+      options:['Aucun problème','Crevaison','Frein défectueux','Chaîne cassée','Autre'], default:'Aucun problème'},
+    {key:'raison', label:'Raison du retard (si applicable)', type:'text', full:true},
+    {key:'decision', label:'Décision (si retard)', type:'select',
+      options:['—','Avertissement verbal','Avertissement écrit','Pénalité appliquée','Suspension','Résilié'], default:'—'},
+    {key:'sigLivreur', label:'Signature livreur', type:'select', options:['Oui','Non'], default:'Non'},
+    {key:'sigGestionnaire', label:'Signature gestionnaire', type:'select', options:['Oui','Non'], default:'Non'},
+  ]},
+  depenses:{ fields:[
+    {key:'date', label:'Date', type:'date', default:todayStr(), required:true},
+    {key:'nature', label:'Nature', type:'select',
+      options:['Réparation','Chambre à air','Pneus','Freins','Huile','Nettoyage','Transport','Achat de pièces','Autre'], default:'Réparation'},
+    {key:'montant', label:'Montant (FCFA)', type:'number', required:true},
+    {key:'motif', label:'Motif', type:'text', full:true},
+  ]},
+  maintenance:{ fields:[
+    {key:'veloId', label:'Vélo', type:'select-velo', required:true},
+    {key:'date', label:'Date', type:'date', default:todayStr()},
+    {key:'panne', label:'Nature de la panne', type:'text'},
+    {key:'reparation', label:'Réparation effectuée', type:'text'},
+    {key:'cout', label:'Coût (FCFA)', type:'number', default:0},
+    {key:'mecanicien', label:'Mécanicien', type:'text'},
+  ]},
+  accidents:{ fields:[
+    {key:'date', label:'Date', type:'date', default:todayStr()},
+    {key:'livreurId', label:'Livreur', type:'select-livreur'},
+    {key:'veloId', label:'Vélo', type:'select-velo'},
+    {key:'lieu', label:'Lieu', type:'text'},
+    {key:'description', label:'Description', type:'textarea', full:true},
+    {key:'responsabilite', label:'Responsabilité', type:'select',
+      options:['Livreur','Tiers','Véloçi','Partagée','Indéterminée'], default:'Indéterminée'},
+    {key:'photo', label:'Photo (nom de fichier / lien)', type:'text'},
+    {key:'cout', label:'Coût des réparations (FCFA)', type:'number', default:0},
+  ]},
+  evaluations:{ fields:[
+    {key:'livreurId', label:'Livreur', type:'select-livreur', required:true},
+    {key:'mois', label:'Mois', type:'month', default:currentMonthStr()},
+    {key:'ponctualite', label:'Ponctualité (/5)', type:'number', min:0, max:5, step:0.5, default:0},
+    {key:'entretien', label:'Entretien du vélo (/5)', type:'number', min:0, max:5, step:0.5, default:0},
+    {key:'commentaire', label:'Commentaire / décision', type:'textarea', full:true},
+  ]},
+  absences:{ fields:[
+    {key:'date', label:'Date', type:'date', default:todayStr(), required:true},
+    {key:'livreurId', label:'Livreur', type:'select-livreur', required:true},
+    {key:'motif', label:'Motif', type:'select',
+      options:['Maladie','Congé','Vélo en panne','Personnel','Non justifié','Autre'], default:'Non justifié'},
+  ]},
+};
+
+/* ---------- modal générique ---------- */
+function openForm(entityKey, id, prefill){
+  if(entityKey==='journal' && !id && !prefill && lastJournalLivreurId){
+    prefill = {date: todayStr(), livreurId: lastJournalLivreurId, veloId: lastJournalVeloId};
+  }
+  modalState = {entity:entityKey, id: id||null, prefill: prefill||null};
+  const schema = SCHEMAS[entityKey];
+  const record = id ? db[entityKey].find(x=>x.id===id) : null;
+  document.getElementById('modalTitle').textContent = (id? 'Modifier ' : 'Ajouter ') + (LABELS[entityKey]||'');
+  const body = document.getElementById('modalBody');
+  body.innerHTML = '';
+  const grid = document.createElement('div'); grid.className='form-grid';
+  schema.fields.forEach(f=>{
+    const wrap = document.createElement('div'); wrap.className = 'field' + (f.full? ' full':'');
+    const label = document.createElement('label'); label.textContent = f.label + (f.required? ' *':'');
+    wrap.appendChild(label);
+    let input;
+    if(f.type==='select'){
+      input = document.createElement('select');
+      (f.options||[]).forEach(opt=>{ const o=document.createElement('option'); o.value=opt; o.textContent=opt; input.appendChild(o); });
+    } else if(f.type==='select-livreur'){
+      input = document.createElement('select');
+      const empty = document.createElement('option'); empty.value=''; empty.textContent='— Aucun —'; input.appendChild(empty);
+      db.livreurs.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=`${l.matricule} — ${l.nom}`; input.appendChild(o); });
+      if(entityKey==='journal'){
+        input.addEventListener('change', e=>{
+          const veloInput = document.querySelector('#modalBody [data-key="veloId"]');
+          const selected = db.livreurs.find(l=>l.id===e.target.value);
+          if(selected && selected.veloId && veloInput){ veloInput.value = selected.veloId; }
+        });
+      }
+    } else if(f.type==='select-velo'){
+      input = document.createElement('select');
+      const empty = document.createElement('option'); empty.value=''; empty.textContent='— Aucun —'; input.appendChild(empty);
+      db.velos.forEach(v=>{ const o=document.createElement('option'); o.value=v.id; o.textContent=`${v.code}${v.modele? ' — '+v.modele:''}`; input.appendChild(o); });
+    } else if(f.type==='textarea'){
+      input = document.createElement('textarea');
+    } else {
+      input = document.createElement('input'); input.type = f.type;
+      if(f.step!==undefined) input.step = f.step;
+      if(f.min!==undefined) input.min = f.min;
+      if(f.max!==undefined) input.max = f.max;
+      if(f.placeholder) input.placeholder = f.placeholder;
+    }
+    input.dataset.key = f.key;
+    let val;
+    if(record) val = record[f.key];
+    else if(modalState.prefill && modalState.prefill[f.key]!==undefined) val = modalState.prefill[f.key];
+    else val = f.default!==undefined ? f.default : '';
+    if(val!==undefined && val!==null) input.value = val;
+    wrap.appendChild(input);
+    grid.appendChild(wrap);
+  });
+  body.appendChild(grid);
+  document.getElementById('overlay').classList.remove('hidden');
+}
+function closeForm(){
+  document.getElementById('overlay').classList.add('hidden');
+  modalState = {entity:null, id:null, prefill:null};
+}
+function saveForm(){
+  const {entity, id} = modalState;
+  const schema = SCHEMAS[entity];
+  const inputs = document.querySelectorAll('#modalBody [data-key]');
+  const data = {};
+  inputs.forEach(inp=>{ data[inp.dataset.key] = inp.value; });
+  for(const f of schema.fields){
+    if(f.required && !data[f.key]){ toast('Champ requis : '+f.label); return; }
+  }
+  if(id){
+    const rec = db[entity].find(x=>x.id===id);
+    Object.assign(rec, data);
+  } else {
+    const rec = {id:uid(), ...data};
+    if(entity==='livreurs' && !rec.matricule) rec.matricule = nextCode(db.livreurs,'matricule','LIV');
+    if(entity==='velos' && !rec.code) rec.code = nextCode(db.velos,'code','VEL');
+    db[entity].push(rec);
+  }
+  if(entity==='journal'){
+    lastJournalLivreurId = data.livreurId || lastJournalLivreurId;
+    lastJournalVeloId = data.veloId || lastJournalVeloId;
+  }
+  saveCollection(entity);
+  closeForm();
+  toast('Enregistré.');
+  renderCurrent();
+}
+function deleteRecord(entity, id){
+  if(!confirm('Supprimer cet élément définitivement ?')) return;
+  db[entity] = db[entity].filter(x=>x.id!==id);
+  saveCollection(entity);
+  toast('Supprimé.');
+  renderCurrent();
+}
+function markJournalRecettePaid(id){
+  const record = db.journal.find(j=>j.id===id);
+  if(!record) return;
+  record.montantPaye = record.montantPrevu || '0';
+  record.heureReellePaiement = record.heureReellePaiement || new Date().toTimeString().slice(0,5);
+  saveCollection('journal');
+  toast('Recette marquée comme payée.');
+  renderCurrent();
+}
+
+/* ---------- construction de tableaux ---------- */
+function buildTable(columns, rows, entityKey, emptyText){
+  const wrap = document.createElement('div'); wrap.className='table-wrap';
+  const table = document.createElement('table');
+  const thead = document.createElement('thead'); const htr = document.createElement('tr');
+  columns.forEach(c=>{ const th=document.createElement('th'); th.textContent=c.label; htr.appendChild(th); });
+  if(entityKey){ const th=document.createElement('th'); th.textContent=''; htr.appendChild(th); }
+  thead.appendChild(htr); table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  if(!rows.length){
+    const tr = document.createElement('tr'); tr.className='empty-row';
+    const td = document.createElement('td'); td.colSpan = columns.length + (entityKey?1:0);
+    td.textContent = emptyText || 'Aucune donnée pour l’instant.';
+    tr.appendChild(td); tbody.appendChild(tr);
+  } else {
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      columns.forEach(c=>{
+        const td = document.createElement('td');
+        if(c.numeric) td.classList.add('num');
+        td.innerHTML = c.render(r);
+        tr.appendChild(td);
+      });
+      if(entityKey){
+        const td = document.createElement('td'); td.className='actions-cell';
+        if(entityKey==='journal'){
+          const sameBtn = document.createElement('button'); sameBtn.className='btn btn-outline btn-sm';
+          sameBtn.textContent='Même livreur';
+          sameBtn.onclick = ()=>openForm('journal', null, {date: todayStr(), livreurId: r.livreurId, veloId: r.veloId});
+          td.appendChild(sameBtn);
+          const due = (Number(r.montantPrevu)||0) - (Number(r.montantPaye)||0);
+          if(due > 0){
+            const payBtn = document.createElement('button'); payBtn.className='btn btn-primary btn-sm';
+            payBtn.textContent='Payer recette';
+            payBtn.onclick = ()=>markJournalRecettePaid(r.id);
+            td.appendChild(payBtn);
+          }
+        }
+        const editBtn = document.createElement('button'); editBtn.className='btn btn-ghost btn-sm';
+        editBtn.textContent='Modifier'; editBtn.onclick=()=>openForm(entityKey, r.id);
+        const delBtn = document.createElement('button'); delBtn.className='btn btn-ghost btn-sm';
+        delBtn.style.color='var(--red)'; delBtn.textContent='Suppr.'; delBtn.onclick=()=>deleteRecord(entityKey, r.id);
+        td.appendChild(editBtn); td.appendChild(delBtn);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    });
+  }
+  table.appendChild(tbody); wrap.appendChild(table);
+  return wrap;
+}
+function setHeader(title, subtitle){
+  document.getElementById('pageTitle').textContent = title;
+  document.getElementById('pageSubtitle').textContent = subtitle;
+  document.getElementById('pageToolbar').innerHTML = '';
+}
+function addButton(entityKey){
+  const btn = document.createElement('button'); btn.className='btn btn-primary';
+  btn.textContent = '+ Ajouter';
+  btn.onclick = ()=>openForm(entityKey, null);
+  document.getElementById('pageToolbar').appendChild(btn);
+}
+
+/* ---------- colonnes des tableaux ---------- */
+const COLS = {};
+COLS.livreurs = [
+  {label:'Matricule', render:r=>plate(r.matricule)},
+  {label:'Nom', render:r=>escapeHtml(r.nom||'—')},
+  {label:'Téléphone', render:r=>escapeHtml(r.tel||'—')},
+  {label:'Quartier', render:r=>escapeHtml(r.quartier||'—')},
+  {label:'Localisation', render:r=>mapPreview(r.latitude)},
+  {label:'Entreprise', render:r=>escapeHtml(r.entreprise||'—')},
+  {label:'Vélo attribué', render:r=>veloCell(r.veloId)},
+  {label:"Entrée", render:r=>fmtDateDisp(r.dateEntree)},
+  {label:'Dette antérieure', render:r=>fmt(r.detteAnterieure), numeric:true},
+  {label:'Statut récent', render:r=>{ const j=latestJournalFor(r.id); return j? chipHtml(statutOf(j)) : '<span class="chip chip-grey">—</span>'; }},
+  {label:'Actif', render:r=> r.actif==='Non' ? '<span class="chip chip-grey">Non</span>' : '<span class="chip chip-green"><span class="dot dot-green"></span>Oui</span>'},
+];
+COLS.velos = [
+  {label:'Code', render:r=>plate(r.code,'velo')},
+  {label:'Modèle', render:r=>escapeHtml(r.modele||'—')},
+  {label:'Acquis le', render:r=>fmtDateDisp(r.dateAcq)},
+  {label:'État', render:r=>etatVeloChip(r.etat)},
+  {label:'Livreur actuel', render:r=>{ const l=db.livreurs.find(x=>x.veloId===r.id); return l? livreurCell(l.id) : '<span class="chip chip-grey">—</span>'; }},
+  {label:'Réparations cumulées', render:r=>fmt(maintenanceCostFor(r.id)), numeric:true},
+  {label:'Observations', render:r=>escapeHtml(r.obs||'—')},
+];
+COLS.journal = [
+  {label:'Date', render:r=>fmtDateDisp(r.date)},
+  {label:'Livreur', render:r=>livreurCell(r.livreurId)},
+  {label:'Vélo', render:r=>veloCell(r.veloId)},
+  {label:'Sortie', render:r=>escapeHtml(r.heureSortie||'—')},
+  {label:'Retour', render:r=>escapeHtml(r.heureRetour||'—')},
+  {label:'Prévu', render:r=>fmt(r.montantPrevu), numeric:true},
+  {label:'Payé', render:r=>fmt(r.montantPaye), numeric:true},
+  {label:'Reste', render:r=>fmt(resteOf(r)), numeric:true},
+  {label:'Statut', render:r=>chipHtml(statutOf(r))},
+  {label:'Retard (j)', render:r=>escapeHtml(String(r.joursRetard||0)), numeric:true},
+  {label:'Pénalité', render:r=>fmt(r.penalite), numeric:true},
+  {label:'Observation', render:r=>escapeHtml(r.observation||'—')},
+];
+COLS.depenses = [
+  {label:'Date', render:r=>fmtDateDisp(r.date)},
+  {label:'Nature', render:r=>escapeHtml(r.nature||'—')},
+  {label:'Montant', render:r=>fmt(r.montant), numeric:true},
+  {label:'Motif', render:r=>escapeHtml(r.motif||'—')},
+];
+COLS.maintenance = [
+  {label:'Vélo', render:r=>veloCell(r.veloId)},
+  {label:'Date', render:r=>fmtDateDisp(r.date)},
+  {label:'Panne', render:r=>escapeHtml(r.panne||'—')},
+  {label:'Réparation effectuée', render:r=>escapeHtml(r.reparation||'—')},
+  {label:'Coût', render:r=>fmt(r.cout), numeric:true},
+  {label:'Mécanicien', render:r=>escapeHtml(r.mecanicien||'—')},
+];
+COLS.accidents = [
+  {label:'Date', render:r=>fmtDateDisp(r.date)},
+  {label:'Livreur', render:r=>livreurCell(r.livreurId)},
+  {label:'Vélo', render:r=>veloCell(r.veloId)},
+  {label:'Lieu', render:r=>escapeHtml(r.lieu||'—')},
+  {label:'Description', render:r=>escapeHtml(r.description||'—')},
+  {label:'Responsabilité', render:r=>escapeHtml(r.responsabilite||'—')},
+  {label:'Coût', render:r=>fmt(r.cout), numeric:true},
+];
+COLS.evaluations = [
+  {label:'Livreur', render:r=>livreurCell(r.livreurId)},
+  {label:'Mois', render:r=>escapeHtml(r.mois||'—')},
+  {label:'Ponctualité', render:r=>escapeHtml(String(r.ponctualite??'—')), numeric:true},
+  {label:'Entretien vélo', render:r=>escapeHtml(String(r.entretien??'—')), numeric:true},
+  {label:'Note globale', render:r=>{
+    const p=Number(r.ponctualite), e=Number(r.entretien);
+    if(isNaN(p)&&isNaN(e)) return '—';
+    const vals=[p,e].filter(v=>!isNaN(v));
+    const avg = vals.reduce((s,v)=>s+v,0)/vals.length;
+    return avg.toFixed(1)+' / 5';
+  }, numeric:true},
+  {label:'Commentaire', render:r=>escapeHtml(r.commentaire||'—')},
+];
+
+/* ---------- pages ---------- */
+const PAGES = {};
+
+PAGES.dashboard = function(){
+  setHeader('Tableau de bord', 'Indicateurs clés du mois sélectionné — se recalculent automatiquement.');
+  if(!dashboardMonth) dashboardMonth = currentMonthStr();
+  const monthInput = document.createElement('input');
+  monthInput.type='month'; monthInput.value=dashboardMonth;
+  monthInput.onchange = e => { dashboardMonth = e.target.value; PAGES.dashboard(); };
+  document.getElementById('pageToolbar').appendChild(monthInput);
+
+  const month = dashboardMonth;
+  const totalVelos = db.velos.length;
+  const disponibles = db.velos.filter(v=>v.etat==='Disponible').length;
+  const enLocation = db.velos.filter(v=>v.etat==='En location').length;
+  const enPanne = db.velos.filter(v=>v.etat==='En réparation'||v.etat==='Hors service').length;
+  const enReparation = db.velos.filter(v=>v.etat==='En réparation').length;
+  const horsService = db.velos.filter(v=>v.etat==='Hors service').length;
+  const tauxDispo = totalVelos ? (disponibles/totalVelos*100) : 0;
+  const livreursActifs = db.livreurs.filter(l=>l.actif!=='Non').length;
+  const nouveaux = db.livreurs.filter(l=>(l.dateEntree||'').slice(0,7)===month).length;
+  const journalMois = db.journal.filter(j=>(j.date||'').slice(0,7)===month);
+  const recettesMois = journalMois.reduce((s,j)=>s+(Number(j.montantPaye)||0),0);
+  const depensesMois = db.depenses.filter(d=>(d.date||'').slice(0,7)===month).reduce((s,d)=>s+(Number(d.montant)||0),0);
+  const beneficeMois = recettesMois - depensesMois;
+  const retardsMois = journalMois.filter(j=>resteOf(j)>0 || (Number(j.joursRetard)||0)>0).length;
+  const dettes = computeDettes();
+  const dettesTotal = dettes.reduce((s,d)=>s+d.solde,0);
+  const coutReparationsMois = db.maintenance.filter(m=>(m.date||'').slice(0,7)===month).reduce((s,m)=>s+(Number(m.cout)||0),0);
+
+  const content = document.getElementById('content'); content.innerHTML='';
+
+  if(isDemoSeed && !bannerDismissed){
+    const banner = document.createElement('div'); banner.className='banner';
+    banner.innerHTML = `<span>Des données d'exemple ont été ajoutées pour vous montrer le fonctionnement de l'outil.</span>`;
+    const btns = document.createElement('div'); btns.style.display='flex'; btns.style.gap='8px';
+    const removeBtn = document.createElement('button'); removeBtn.className='btn btn-outline btn-sm';
+    removeBtn.textContent="Supprimer l'exemple"; removeBtn.onclick = resetAll;
+    const dismissBtn = document.createElement('button'); dismissBtn.className='btn btn-ghost btn-sm';
+    dismissBtn.textContent='✕'; dismissBtn.onclick = ()=>{ bannerDismissed=true; PAGES.dashboard(); };
+    btns.appendChild(removeBtn); btns.appendChild(dismissBtn);
+    banner.appendChild(btns);
+    content.appendChild(banner);
+  }
+
+  const kpis = [
+    {label:'Total vélos', value:totalVelos},
+    {label:'Vélos disponibles', value:disponibles, cls:'good'},
+    {label:'Vélos en location', value:enLocation},
+    {label:'Vélos en panne', value:enPanne, cls: enPanne>0?'bad':''},
+    {label:'Taux de disponibilité', value:tauxDispo.toFixed(0)+'%', cls: tauxDispo>=50?'good':'warn'},
+    {label:'Livreurs actifs', value:livreursActifs},
+    {label:'Nouveaux livreurs (mois)', value:nouveaux},
+    {label:'Recettes du mois', value:fmt(recettesMois), cls:'good'},
+    {label:'Dépenses du mois', value:fmt(depensesMois)},
+    {label:'Bénéfice net (mois)', value:fmt(beneficeMois), cls: beneficeMois>=0?'good':'bad'},
+    {label:'Retards de paiement (mois)', value:retardsMois, cls: retardsMois>0?'warn':''},
+    {label:'Total des dettes (à date)', value:fmt(dettesTotal), cls: dettesTotal>0?'bad':'good'},
+    {label:'Coût réparations (mois)', value:fmt(coutReparationsMois)},
+  ];
+  const grid = document.createElement('div'); grid.className='kpi-grid';
+  kpis.forEach(k=>{
+    const card = document.createElement('div'); card.className='kpi-card';
+    card.innerHTML = `<div class="kpi-label">${escapeHtml(k.label)}</div><div class="kpi-value ${k.cls||''}">${k.value}</div>`;
+    grid.appendChild(card);
+  });
+  content.appendChild(grid);
+
+  const fleetCard = document.createElement('div'); fleetCard.className='card';
+  const segs = [
+    {n:disponibles, color:'var(--green)', label:'Disponible'},
+    {n:enLocation, color:'#8C93A0', label:'En location'},
+    {n:enReparation, color:'var(--amber)', label:'En réparation'},
+    {n:horsService, color:'var(--red)', label:'Hors service'},
+  ];
+  const bar = totalVelos ? segs.map(s=>{
+    const pct = (s.n/totalVelos*100);
+    return pct>0 ? `<div style="width:${pct}%; background:${s.color};">${pct>10? s.n : ''}</div>` : '';
+  }).join('') : '<div style="width:100%; background:#EDEAE0; color:var(--ink-soft);">Aucun vélo enregistré</div>';
+  fleetCard.innerHTML = `
+    <h3>État de la flotte</h3>
+    <p class="hint">Répartition des ${totalVelos} vélo(s) enregistré(s).</p>
+    <div class="fleet-bar">${bar}</div>
+    <div class="fleet-legend">
+      ${segs.map(s=>`<span><span class="swatch" style="background:${s.color};"></span>${s.label} (${s.n})</span>`).join('')}
+    </div>`;
+  content.appendChild(fleetCard);
+
+  const topDebtors = dettes.filter(d=>d.solde>0).sort((a,b)=>b.solde-a.solde).slice(0,5);
+  const debtCard = document.createElement('div'); debtCard.className='card';
+  debtCard.innerHTML = `<h3>Livreurs à surveiller (dette la plus élevée)</h3><p class="hint">Basé sur le solde cumulé, toutes périodes confondues.</p>`;
+  debtCard.appendChild(buildTable(
+    [
+      {label:'Livreur', render:d=>livreurCell(d.livreur.id)},
+      {label:'Solde dû', render:d=>fmt(d.solde), numeric:true},
+    ],
+    topDebtors, null, 'Aucune dette en cours — tout le monde est à jour.'
+  ));
+  content.appendChild(debtCard);
+};
+
+function makeListPage(entityKey, title, subtitle, emptyText){
+  return function(){
+    setHeader(title, subtitle);
+    addButton(entityKey);
+    const rows = sortByDateDesc(db[entityKey]);
+    const content = document.getElementById('content'); content.innerHTML='';
+    content.appendChild(buildTable(COLS[entityKey], rows, entityKey, emptyText));
+  };
+}
+PAGES.livreurs = function(){
+  setHeader('Livreurs', "Fiche d'identité de chaque livreur — matricule, contact, vélo attribué, dette.");
+  addButton('livreurs');
+  const content = document.getElementById('content'); content.innerHTML='';
+  content.appendChild(buildTable(COLS.livreurs, db.livreurs, 'livreurs',
+    'Aucun livreur pour l’instant. Ajoutez le premier avec le bouton « + Ajouter ».'));
+};
+PAGES.velos = function(){
+  setHeader('Vélos', "Fiche de chaque vélo, son état actuel et le livreur qui l'utilise.");
+  addButton('velos');
+  const content = document.getElementById('content'); content.innerHTML='';
+  content.appendChild(buildTable(COLS.velos, db.velos, 'velos',
+    'Aucun vélo pour l’instant. Ajoutez le premier avec le bouton « + Ajouter ».'));
+};
+PAGES.journal = makeListPage('journal', 'Journal quotidien',
+  "Une ligne par livreur et par jour. C'est le cœur du système : Recettes, Retards, Dettes, Présence et le Tableau de bord se calculent à partir de cette liste.",
+  'Aucune fiche pour l’instant. Ajoutez la première sortie du jour.');
+PAGES.depenses = makeListPage('depenses', 'Dépenses',
+  'Toutes les dépenses de la flotte : réparations, pièces, transport…',
+  'Aucune dépense enregistrée pour l’instant.');
+PAGES.maintenance = makeListPage('maintenance', 'Maintenance',
+  'Historique des réparations, vélo par vélo.',
+  'Aucune intervention enregistrée pour l’instant.');
+PAGES.accidents = makeListPage('accidents', 'Accidents',
+  'Suivi des accidents et sinistres impliquant un livreur ou un vélo.',
+  'Aucun accident enregistré — tant mieux.');
+PAGES.evaluations = makeListPage('evaluations', 'Évaluations mensuelles',
+  'Notation mensuelle des livreurs : ponctualité, entretien du vélo, commentaire.',
+  'Aucune évaluation pour l’instant.');
+
+PAGES.recettes = function(){
+  setHeader('Recettes', 'Synthèse quotidienne calculée automatiquement à partir du Journal quotidien.');
+  const map = {};
+  db.journal.forEach(j=>{
+    if(!j.date) return;
+    if(!map[j.date]) map[j.date] = {prevu:0, paye:0, n:0};
+    map[j.date].prevu += Number(j.montantPrevu)||0;
+    map[j.date].paye += Number(j.montantPaye)||0;
+    map[j.date].n += 1;
+  });
+  const dates = Object.keys(map).sort().reverse();
+  const rows = dates.map(d=>({date:d, ...map[d], reste: map[d].prevu-map[d].paye}));
+  const totals = rows.reduce((s,r)=>({prevu:s.prevu+r.prevu, paye:s.paye+r.paye, reste:s.reste+r.reste}), {prevu:0,paye:0,reste:0});
+  const content = document.getElementById('content'); content.innerHTML='';
+  content.appendChild(buildTable([
+    {label:'Date', render:r=>fmtDateDisp(r.date)},
+    {label:'Total attendu', render:r=>fmt(r.prevu), numeric:true},
+    {label:'Total encaissé', render:r=>fmt(r.paye), numeric:true},
+    {label:'Reste à récupérer', render:r=>fmt(r.reste), numeric:true},
+    {label:'Livreurs actifs ce jour', render:r=>escapeHtml(String(r.n)), numeric:true},
+    {label:"Taux d'encaissement", render:r=> r.prevu? Math.round(r.paye/r.prevu*100)+'%' : '—', numeric:true},
+  ], rows, null, 'Aucune donnée pour l’instant — ajoutez des fiches dans le Journal quotidien.'));
+  if(rows.length){
+    const totalCard = document.createElement('div'); totalCard.className='card'; totalCard.style.marginTop='16px';
+    totalCard.innerHTML = `<h3>Total général</h3>
+      <p><strong>${fmt(totals.prevu)}</strong> attendu · <strong>${fmt(totals.paye)}</strong> encaissé ·
+      <strong>${fmt(totals.reste)}</strong> restant à récupérer.</p>`;
+    content.appendChild(totalCard);
+  }
+};
+
+PAGES.retards = function(){
+  setHeader('Gestion des retards', 'Livreurs ayant un reste à payer ou un retard signalé — identifiez vite les mauvais payeurs.');
+  const rows = sortByDateDesc(db.journal.filter(j=>resteOf(j)>0 || (Number(j.joursRetard)||0)>0));
+  const content = document.getElementById('content'); content.innerHTML='';
+  content.appendChild(buildTable([
+    {label:'Livreur', render:r=>livreurCell(r.livreurId)},
+    {label:'Date', render:r=>fmtDateDisp(r.date)},
+    {label:'Jours de retard', render:r=>escapeHtml(String(r.joursRetard||0)), numeric:true},
+    {label:'Somme due', render:r=>fmt(resteOf(r)+(Number(r.penalite)||0)), numeric:true},
+    {label:'Raison', render:r=>escapeHtml(r.raison||'—')},
+    {label:'Décision', render:r=>escapeHtml(r.decision&&r.decision!=='—'? r.decision : '—')},
+  ], rows, 'journal', 'Aucun retard en cours — tous les livreurs sont à jour.'));
+};
+
+function computeDettes(){
+  return db.livreurs.map(l=>{
+    const entries = db.journal.filter(j=>j.livreurId===l.id);
+    const attendu = entries.reduce((s,j)=>s+(Number(j.montantPrevu)||0)+(Number(j.penalite)||0),0);
+    const paye = entries.reduce((s,j)=>s+(Number(j.montantPaye)||0),0);
+    const anterieure = Number(l.detteAnterieure)||0;
+    return {livreur:l, anterieure, attendu, paye, solde: anterieure+attendu-paye};
+  });
+}
+PAGES.dettes = function(){
+  setHeader('Tableau des dettes', 'Solde dû par chaque livreur — mis à jour automatiquement depuis le Journal quotidien.');
+  const rows = computeDettes().sort((a,b)=>b.solde-a.solde);
+  const content = document.getElementById('content'); content.innerHTML='';
+  const wrap = document.createElement('div'); wrap.className='table-wrap';
+  const table = document.createElement('table');
+  table.innerHTML = `<thead><tr>
+    <th>Livreur</th><th>Dette antérieure</th><th>Total attendu cumulé</th><th>Total payé cumulé</th><th>Solde dû</th><th></th>
+  </tr></thead>`;
+  const tbody = document.createElement('tbody');
+  if(!rows.length){
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">Aucun livreur enregistré pour l’instant.</td></tr>`;
+  } else {
+    rows.forEach(d=>{
+      const tr = document.createElement('tr');
+      const soldeChip = d.solde>0 ? `<span class="num" style="color:var(--red); font-weight:600;">${fmt(d.solde)}</span>` : `<span class="num" style="color:var(--green); font-weight:600;">${fmt(d.solde)}</span>`;
+      tr.innerHTML = `<td>${livreurCell(d.livreur.id)}</td>
+        <td class="num">${fmt(d.anterieure)}</td>
+        <td class="num">${fmt(d.attendu)}</td>
+        <td class="num">${fmt(d.paye)}</td>
+        <td class="num">${soldeChip}</td>`;
+      const td = document.createElement('td'); td.className='actions-cell';
+      const btn = document.createElement('button'); btn.className='btn btn-ghost btn-sm';
+      btn.textContent='Ajuster'; btn.onclick=()=>openForm('livreurs', d.livreur.id);
+      td.appendChild(btn); tr.appendChild(td);
+      tbody.appendChild(tr);
+    });
+  }
+  table.appendChild(tbody); wrap.appendChild(table);
+  content.appendChild(wrap);
+  const totalSolde = rows.reduce((s,d)=>s+d.solde,0);
+  const card = document.createElement('div'); card.className='card'; card.style.marginTop='16px';
+  card.innerHTML = `<h3>Total des dettes</h3><p><strong>${fmt(totalSolde)}</strong> restent dus, toutes périodes confondues.</p>`;
+  content.appendChild(card);
+};
+
+PAGES.presence = function(){
+  setHeader('Présence', 'Qui a travaillé, qui est absent — jour par jour.');
+  if(!presenceDate) presenceDate = todayStr();
+  const dateInput = document.createElement('input'); dateInput.type='date'; dateInput.value=presenceDate;
+  dateInput.onchange = e => { presenceDate = e.target.value; PAGES.presence(); };
+  document.getElementById('pageToolbar').appendChild(dateInput);
+
+  const date = presenceDate;
+  const rows = db.livreurs.filter(l=>l.actif!=='Non').map(l=>{
+    const present = db.journal.some(j=>j.livreurId===l.id && j.date===date);
+    const absence = db.absences.find(a=>a.livreurId===l.id && a.date===date);
+    let status;
+    if(present) status = {cls:'chip-green', dot:'dot-green', label:'Présent'};
+    else if(absence) status = {cls:'chip-red', dot:'dot-red', label:'Absent'};
+    else status = {cls:'chip-grey', dot:'', label:'Non renseigné'};
+    return {l, present, absence, status};
+  });
+  const content = document.getElementById('content'); content.innerHTML='';
+  const wrap = document.createElement('div'); wrap.className='table-wrap';
+  const table = document.createElement('table');
+  table.innerHTML = `<thead><tr><th>Livreur</th><th>Vélo</th><th>Statut</th><th>Motif</th><th></th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  if(!rows.length){
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Aucun livreur actif enregistré.</td></tr>`;
+  } else {
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${livreurCell(r.l.id)}</td>
+        <td>${veloCell(r.l.veloId)}</td>
+        <td>${chipHtml(r.status)}</td>
+        <td>${escapeHtml(r.absence? r.absence.motif : '—')}</td>`;
+      const td = document.createElement('td'); td.className='actions-cell';
+      if(!r.present){
+        const btn = document.createElement('button'); btn.className='btn btn-outline btn-sm';
+        btn.textContent = r.absence? 'Modifier le motif' : 'Marquer absent';
+        btn.onclick = ()=>openAbsenceForm(r.l.id, date);
+        td.appendChild(btn);
+      }
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    });
+  }
+  table.appendChild(tbody); wrap.appendChild(table);
+  content.appendChild(wrap);
+};
+function openAbsenceForm(livreurId, date){
+  const existing = db.absences.find(a=>a.livreurId===livreurId && a.date===date);
+  if(existing) openForm('absences', existing.id);
+  else openForm('absences', null, {livreurId, date});
+}
+
+PAGES.flotte = function(){
+  setHeader('État de la flotte', "Vue d'ensemble en temps réel. Pour modifier l'état d'un vélo, ouvrez l'onglet Vélos.");
+  const totalVelos = db.velos.length;
+  const segs = [
+    {n:db.velos.filter(v=>v.etat==='Disponible').length, color:'var(--green)', label:'Disponible'},
+    {n:db.velos.filter(v=>v.etat==='En location').length, color:'#8C93A0', label:'En location'},
+    {n:db.velos.filter(v=>v.etat==='En réparation').length, color:'var(--amber)', label:'En réparation'},
+    {n:db.velos.filter(v=>v.etat==='Hors service').length, color:'var(--red)', label:'Hors service'},
+  ];
+  const content = document.getElementById('content'); content.innerHTML='';
+  const card = document.createElement('div'); card.className='card';
+  const bar = totalVelos ? segs.map(s=>{
+    const pct = (s.n/totalVelos*100);
+    return pct>0 ? `<div style="width:${pct}%; background:${s.color};">${pct>10? s.n : ''}</div>` : '';
+  }).join('') : '<div style="width:100%; background:#EDEAE0; color:var(--ink-soft);">Aucun vélo enregistré</div>';
+  card.innerHTML = `<h3>Répartition de la flotte</h3><div class="fleet-bar">${bar}</div>
+    <div class="fleet-legend">${segs.map(s=>`<span><span class="swatch" style="background:${s.color};"></span>${s.label} (${s.n})</span>`).join('')}</div>`;
+  content.appendChild(card);
+  content.appendChild(buildTable([
+    {label:'Code', render:r=>plate(r.code,'velo')},
+    {label:'Modèle', render:r=>escapeHtml(r.modele||'—')},
+    {label:'État', render:r=>etatVeloChip(r.etat)},
+    {label:'Livreur actuel', render:r=>{ const l=db.livreurs.find(x=>x.veloId===r.id); return l? livreurCell(l.id):'<span class="chip chip-grey">—</span>'; }},
+  ], db.velos, null, 'Aucun vélo enregistré pour l’instant.'));
+};
+
+PAGES.legende = function(){
+  setHeader('Légende & aide', "Codes, couleurs et gestion de vos données.");
+  const content = document.getElementById('content'); content.innerHTML='';
+
+  const c1 = document.createElement('div'); c1.className='card';
+  c1.innerHTML = `<h3>Codes d'identification</h3>
+    <div class="legend-row"><div class="k">${plate('VEL-001','velo')}</div><div class="v">Chaque vélo reçoit un code unique, généré automatiquement (VEL-001, VEL-002…).</div></div>
+    <div class="legend-row"><div class="k">${plate('LIV-001')}</div><div class="v">Chaque livreur reçoit un matricule unique, généré automatiquement (LIV-001, LIV-002…).</div></div>`;
+  content.appendChild(c1);
+
+  const c2 = document.createElement('div'); c2.className='card';
+  c2.innerHTML = `<h3>Code couleur des paiements</h3>
+    <div class="legend-row"><div class="k">${chipHtml({cls:'chip-green',dot:'dot-green',label:'À jour'})}</div><div class="v">Le livreur a payé la totalité du montant prévu.</div></div>
+    <div class="legend-row"><div class="k">${chipHtml({cls:'chip-amber',dot:'dot-amber',label:'Partiel'})}</div><div class="v">Une partie seulement du montant prévu a été payée.</div></div>
+    <div class="legend-row"><div class="k">${chipHtml({cls:'chip-red',dot:'dot-red',label:'Retard / dette'})}</div><div class="v">Rien n'a été payé, ou un retard est signalé.</div></div>`;
+  content.appendChild(c2);
+
+  const c3 = document.createElement('div'); c3.className='card';
+  c3.innerHTML = `<h3>Comment le système est organisé</h3>
+    <div class="legend-row"><div class="k">Journal quotidien</div><div class="v">Le cœur du système. Une ligne par livreur et par jour. Tous les autres écrans (Recettes, Retards, Dettes, Présence, Tableau de bord) se calculent automatiquement à partir de lui — vous ne saisissez chaque information qu'une seule fois.</div></div>
+    <div class="legend-row"><div class="k">Livreurs / Vélos</div><div class="v">Les fiches permanentes : identité, contact, état du matériel.</div></div>
+    <div class="legend-row"><div class="k">Dépenses / Maintenance / Accidents</div><div class="v">Les registres complémentaires que vous remplissez au fil de l'eau.</div></div>`;
+  content.appendChild(c3);
+
+  const c4 = document.createElement('div'); c4.className='card';
+  c4.innerHTML = `<h3>Vos données</h3>
+    <p class="hint">Tout est enregistré automatiquement dans votre compte au fur et à mesure. Vous pouvez aussi faire une sauvegarde de secours ou repartir de zéro.</p>`;
+  const btnRow = document.createElement('div'); btnRow.style.display='flex'; btnRow.style.gap='10px'; btnRow.style.flexWrap='wrap';
+  const exportBtn = document.createElement('button'); exportBtn.className='btn btn-outline'; exportBtn.textContent='Exporter mes données (JSON)';
+  exportBtn.onclick = exportData;
+  const importBtn = document.createElement('button'); importBtn.className='btn btn-outline'; importBtn.textContent='Importer des données (JSON)';
+  const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept='application/json'; fileInput.style.display='none';
+  fileInput.onchange = e => { if(e.target.files[0]) importDataFromFile(e.target.files[0]); };
+  importBtn.onclick = ()=>fileInput.click();
+  const resetBtn = document.createElement('button'); resetBtn.className='btn btn-danger'; resetBtn.textContent='Réinitialiser toutes les données';
+  resetBtn.onclick = resetAll;
+  btnRow.appendChild(exportBtn); btnRow.appendChild(importBtn); btnRow.appendChild(fileInput); btnRow.appendChild(resetBtn);
+  c4.appendChild(btnRow);
+  content.appendChild(c4);
+};
+
+/* ---------- navigation ---------- */
+const NAV = [
+  {group:"Vue d'ensemble", items:[ {id:'dashboard', label:'Tableau de bord', badge:'TB'} ]},
+  {group:'Fiches', items:[
+    {id:'livreurs', label:'Livreurs', badge:'LI'},
+    {id:'velos', label:'Vélos', badge:'VE'},
+  ]},
+  {group:'Activité quotidienne', items:[
+    {id:'journal', label:'Journal quotidien', badge:'JQ'},
+    {id:'depenses', label:'Dépenses', badge:'DE'},
+    {id:'maintenance', label:'Maintenance', badge:'MA'},
+    {id:'accidents', label:'Accidents', badge:'AC'},
+  ]},
+  {group:'Synthèses automatiques', items:[
+    {id:'recettes', label:'Recettes', badge:'RC'},
+    {id:'retards', label:'Retards', badge:'RT'},
+    {id:'dettes', label:'Dettes', badge:'DT'},
+    {id:'presence', label:'Présence', badge:'PR'},
+    {id:'flotte', label:'État de la flotte', badge:'EF'},
+  ]},
+  {group:'Suivi', items:[
+    {id:'evaluations', label:'Évaluations', badge:'EV'},
+    {id:'legende', label:'Légende & aide', badge:'?'},
+  ]},
+];
+function renderNavSkeleton(){
+  const nav = document.getElementById('nav'); nav.innerHTML='';
+  NAV.forEach(group=>{
+    const gl = document.createElement('div'); gl.className='nav-group-label'; gl.textContent=group.group;
+    nav.appendChild(gl);
+    group.items.forEach(item=>{
+      const a = document.createElement('div'); a.className='nav-item'; a.dataset.page=item.id;
+      a.innerHTML = `<span class="nav-badge">${item.badge}</span><span>${item.label}</span>`;
+      a.onclick = ()=>go(item.id);
+      nav.appendChild(a);
+    });
+  });
+}
+function renderNavActive(){
+  document.querySelectorAll('.nav-item').forEach(el=>{
+    el.classList.toggle('active', el.dataset.page===currentPage);
+  });
+}
+function go(page){
+  currentPage = page;
+  renderNavActive();
+  renderCurrent();
+  if(window.innerWidth<=880) document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('content').scrollTo?.(0,0);
+  window.scrollTo(0,0);
+}
+function renderCurrent(){ PAGES[currentPage](); }
+
+/* ---------- initialisation ---------- */
+async function init(){
+  renderNavSkeleton();
+  document.getElementById('content').innerHTML = '<div class="card"><p class="hint" style="margin:0;">Chargement de vos données…</p></div>';
+  await loadAll();
+  await maybeSeed();
+  go('dashboard');
+
+  document.getElementById('modalClose').onclick = closeForm;
+  document.getElementById('modalCancel').onclick = closeForm;
+  document.getElementById('modalSave').onclick = saveForm;
+  document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeForm(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeForm(); });
+  document.getElementById('menuBtn').onclick = ()=>document.getElementById('sidebar').classList.toggle('open');
+}
+init();
+</script>
+</body>
+</html>
